@@ -1,0 +1,72 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: tb-data
+  namespace: thingsboard 
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: tb-log
+  namespace: thingsboard
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    k8s-app: thingsboard
+  name: thingsboard
+  namespace: thingsboard
+spec:
+  selector:
+    matchLabels:
+      k8s-app: thingsboard
+  template:
+    metadata:
+      labels:
+        k8s-app: thingsboard
+    spec:
+      containers:
+      - name: thingsboard
+        image: thingsboard/tb-cassandra
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 9090
+          name: http
+          protocol: TCP
+        - containerPort: 1883
+          name: mqtt
+          protocol: TCP
+        - containerPort: 5683
+          name: coap
+          protocol: UDP
+        volumeMounts:
+        - name: data
+          mountPath: /data
+        - name: log
+          mountPath: /var/log/thingsboard
+      restartPolicy: Always
+      serviceAccount: thingsboard
+      serviceAccountName: thingsboard
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: tb-data
+      - name: log
+        persistentVolumeClaim:
+          claimName: tb-log
+

@@ -1,0 +1,14 @@
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: thingsboard
+  labels:
+    k8s-app: thingsboard
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: thingsboard
+subjects:
+- kind: ServiceAccount
+  name: thingsboard
+  namespace: thingsboard
